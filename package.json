@@ -7,36 +7,50 @@
     "npm": ">=6.14.12"
   },
   "dependencies": {
-    "@sendgrid/mail": "7.4.0",
-    "@slippi/slippi-js": "5.0.4",
-    "chalk": "2.4.2",
-    "dotenv": "6.2.0",
+    "@sendgrid/mail": "7.7.0",
+    "chalk": "4.1.2",
+    "dotenv": "16.0.2",
     "errorhandler": "1.5.1",
-    "express": "4.16.3",
-    "express-joi-validation": "4.0.3",
-    "joi": "14.3.1",
-    "lodash": "4.17.15",
-    "mongodb": "3.5.7",
-    "pusher": "4.0.2",
-    "ramda": "0.27.0",
-    "uuid": "7.0.2"
+    "express": "4.18.1",
+    "express-joi-validation": "5.0.1",
+    "joi": "17.6.0",
+    "lodash": "4.17.21",
+    "mongodb": "4.9.1",
+    "pusher": "5.1.1-beta",
+    "ramda": "0.28.0",
+    "uuid": "9.0.0"
   },
   "devDependencies": {
-    "eslint": "6.8.0",
-    "eslint-plugin-node": "10.0.0",
-    "husky": "3.1.0",
-    "nodemon": "2.0.2"
+    "@types/auth0": "2.35.3",
+    "@types/express": "4.17.13",
+    "@types/lodash": "4.14.184",
+    "@types/node": "18.7.15",
+    "@typescript-eslint/eslint-plugin": "5.36.2",
+    "@typescript-eslint/parser": "5.36.2",
+    "concurrently": "7.3.0",
+    "cross-env": "7.0.3",
+    "eslint": "8.23.0",
+    "eslint-plugin-node": "11.1.0",
+    "husky": "^8.0.0",
+    "kill-port": "2.0.1",
+    "nodemon": "2.0.19",
+    "start-server-and-test": "1.14.0",
+    "typescript": "4.8.2"
   },
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/server.js\"",
     "lint": "eslint src/",
-    "test": "cd tests && pipenv install && pipenv run pytest",
-    "verify": "yarn lint && yarn test"
+    "integration-tests": "cd tests && pipenv install > nul 2>&1 && pipenv run pytest",
+    "test": "npm run build && npx kill-port 5711 && start-server-and-test \"cross-env PORT=5711 node dist/server.js\" http://localhost:5711/api integration-tests",
+    "prepare": "husky install",
+    "verify": "npm run lint && npm run test"
+    
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn lint"
+      "pre-push": "npm run verify"
     }
   }
 }

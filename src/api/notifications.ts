@@ -1,26 +1,33 @@
-const notifications = require('express').Router();
-const emailClient = require('@sendgrid/mail');
-const notificationsData = require('../data/notifications');
-const getInviteHtml = require('../utils/getInviteHtml');
-const status = require('../utils/statusMessages');
-const { validator } = require('../utils/validator');
-const {
+import { Router } from 'express';
+import emailClient from '@sendgrid/mail';
+import {
+  dismiss,
+  getUserNotifications,
+  markAllAsRead,
+  markAsRead
+} from '../data/notifications';
+import { getInviteHtml } from '../utils/invitation';
+import { created, serverError, success } from '../utils/statusMessages';
+import { validator } from '../utils/validator';
+import {
   getUserNotificationsQuery,
   postInvitationBody,
   defaultNotificationParams,
   patchNotificationBody
-} = require('./validation/notifications');
+} from './validation/notifications';
+
+const notifications = Router();
 
 notifications.get('/', validator.query(getUserNotificationsQuery), async (req, res) => {
   const { query: { pageNum, pageSize, userEmail } } = req;
-  const page = parseInt(pageNum) || 1;
-  const size = parseInt(pageSize) || 50;
+  const page = parseInt(pageNum as string) || 1;
+  const size = parseInt(pageSize as string) || 50;
 
-  const { items, totalItems, totalPages } = await notificationsData.getUserNotifications(page, size, userEmail);
+  const { items, totalItems, totalPages } = await getUserNotifications(page, size, userEmail as string);
 
-  if (!items) return status.serverError(res, 'Failed', 'Failed to get notifications');
+  if (!items) return serverError(res, 'Failed to get notifications');
 
-  return status.success(res, {
+  return success(res, {
     items,
     pageNum: page,
     pageSize: size,
@@ -37,7 +44,7 @@ notifications.post('/invitation', validator.body(postInvitationBody), async (req
   const text = 'We bet you will have a lot of fun joining this pool';
   const html = getInviteHtml(poolId, location);
 
-  emailClient.setApiKey(process.env.SENDGRID_API_KEY);
+  emailClient.setApiKey(process.env.SENDGRID_API_KEY as string);
   emailClient
     .send({ to, from, subject, text, html })
     .then(() => {
@@ -50,15 +57,15 @@ notifications.post('/invitation', validator.body(postInvitationBody), async (req
       }
     });
 
-  return status.created(res, { to, from, subject, text, html });
+  return created(res, to);
 });
 
 notifications.patch('/readAll', validator.body(patchNotificationBody), async (req, res) => {
   const { body: { userEmail } } = req;
 
-  const notifications = await notificationsData.markAllAsRead(userEmail);
+  const notificationsUpdate = await markAllAsRead(userEmail);
 
-  return status.success(res, { notifications });
+  return success(res, notificationsUpdate);
 });
 
 notifications.patch('/:notificationId/read',
@@ -67,9 +74,9 @@ notifications.patch('/:notificationId/read',
   async (req, res) => {
     const { params: { notificationId }, body: { userEmail } } = req;
 
-    const notification = await notificationsData.markAsRead(userEmail, notificationId);
+    const notificationUpdate = await markAsRead(userEmail, notificationId);
 
-    return status.success(res, { notification });
+    return success(res, notificationUpdate);
   }
 );
 
@@ -79,10 +86,10 @@ notifications.patch('/:notificationId/dismiss',
   async (req, res) => {
     const { params: { notificationId }, body: { userEmail } } = req;
 
-    const notification = await notificationsData.dismiss(userEmail, notificationId);
+    const notificationUpdate = await dismiss(userEmail, notificationId);
 
-    return status.success(res, { notification });
+    return success(res, notificationUpdate);
   }
 );
 
-module.exports = notifications;
+export default notifications;
