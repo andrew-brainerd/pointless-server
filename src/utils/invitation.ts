@@ -20,9 +20,10 @@ const inviteButtonStyle = `
   width: 150px;
 `.replace(/\n/g, '');
 
-const getInviteHtml = (poolId, location) => {
-  const { protocol, hostname } = process.env.NODE_ENV === 'production' ?
-    location : { protocol: 'http:', hostname: 'localhost:3000' };
+export const getInviteHtml = (poolId: string, location: Location) => {
+  const { protocol, hostname } = process.env.NODE_ENV === 'production'
+      ? location
+      : { protocol: 'http:', hostname: 'localhost:3000' };
 
   return `
     <html>
@@ -47,5 +48,3 @@ const getInviteHtml = (poolId, location) => {
     </html>
   `.replace(/\n/g, '');
 };
-
-module.exports = getInviteHtml;

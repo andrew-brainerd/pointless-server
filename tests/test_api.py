@@ -1,14 +1,12 @@
-import requests
 import json
-
-baseUrl = 'http://localhost:5000'
+import requests
 
 with open('../package.json') as f:
-  packageInfo = json.load(f)
+  package_info = json.load(f)
 
-def test_getApiRoot():
-  url = f'{baseUrl}/api'
-  version = packageInfo['version']
+def test_get_welcome_success(base_url):
+  url = f'{base_url}/api'
+  version = package_info['version']
 
   response = requests.request('GET', url)
   body = response.json()

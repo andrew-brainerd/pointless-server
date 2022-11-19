@@ -1,6 +1,6 @@
-const Joi = require('joi');
+import Joi from 'joi';
 
-const postUserBody = Joi.object({
+export const postUserBody = Joi.object({
   user: Joi.object({
     name: Joi.string().required(),
     given_name: Joi.string(),
@@ -15,16 +15,10 @@ const postUserBody = Joi.object({
   })
 });
 
-const getUserByEmailQuery = Joi.object({
+export const getUserByEmailQuery = Joi.object({
   email: Joi.string()
 });
 
-const getUserByUsernameQuery = Joi.object({
+export const getUserByUsernameQuery = Joi.object({
   username: Joi.string()
 });
-
-module.exports = {
-  postUserBody,
-  getUserByEmailQuery,
-  getUserByUsernameQuery
-};
