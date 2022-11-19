@@ -18,6 +18,8 @@ app.use((req, res, next) => {
 
 app.use('/api', require('./api'));
 
+app.use(express.static('public'));
+
 app.use(validationErrorHandler);
 
 app.listen(port, () => {
